@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PARADISE | مدیریت املاک</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap');
+:root{--navy:#101d35;--gold:#d6ad60;--bg:#f3f5f8;--white:#fff;--muted:#8490a3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:Vazirmatn,sans-serif;color:#17243a}
+header{background:var(--navy);color:white;padding:20px 18px 24px;border-radius:0 0 24px 24px}
+.brand{display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:23px;font-weight:800;letter-spacing:2px;color:var(--gold)}
+.logo small{display:block;font-size:10px;letter-spacing:3px;color:#dce2ec}
+.badge{background:#263956;padding:8px 12px;border-radius:20px;font-size:11px}
+.welcome{margin-top:23px;font-size:20px;font-weight:700}
+.welcome span{color:var(--gold)}
+.subtitle{font-size:12px;color:#bdc8d8;margin-top:5px}
+main{padding:17px;max-width:900px;margin:auto}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:11px;margin-top:-1px}
+.stat{background:white;border-radius:16px;padding:16px;box-shadow:0 3px 15px #1527440b}
+.stat b{font-size:25px;display:block;color:var(--navy)}
+.stat span{font-size:11px;color:var(--muted)}
+.section-title{display:flex;align-items:center;justify-content:space-between;margin:24px 0 12px;font-weight:800}
+.section-title small{font-size:11px;color:var(--muted);font-weight:400}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button{font-family:inherit;cursor:pointer;border:0}
+.action{padding:15px 9px;border-radius:13px;background:white;color:var(--navy);font-weight:700;border:1px solid #e8ebf0}
+.action.primary{background:var(--gold);color:#17243a;border:0}
+.panel{background:white;padding:15px;border-radius:17px;box-shadow:0 3px 15px #15274408}
+#map{height:300px;border-radius:13px;z-index:1}
+.search{width:100%;padding:13px;border:1px solid #e3e7ed;border-radius:11px;font-family:inherit;outline:none;margin-bottom:10px}
+.filters{display:flex;gap:7px;overflow:auto;margin-bottom:12px}
+.filter{white-space:nowrap;background:#f0f2f6;color:#536078;padding:8px 13px;border-radius:20px;font-size:11px}
+.filter.active{background:var(--navy);color:white}
+.listing{padding:13px 0;border-bottom:1px solid #edf0f4;display:flex;justify-content:space-between;gap:10px}
+.listing:last-child{border:0}
+.listing b{font-size:13px}
+.listing p{font-size:11px;color:var(--muted);margin:5px 0}
+.price{font-size:12px;color:#a47a32;font-weight:700;white-space:nowrap}
+.tag{font-size:10px;padding:4px 8px;border-radius:8px;background:#eef3f9;color:#536078}
+form label{display:block;font-size:12px;margin:12px 0 6px;color:#596579}
+input,select,textarea{width:100%;padding:12px;border:1px solid #e1e5ec;border-radius:10px;font-family:inherit;font-size:13px;background:white}
+.submit{width:100%;background:var(--navy);color:white;padding:14px;border-radius:11px;margin-top:17px;font-weight:700}
+.modal{display:none;position:fixed;inset:0;background:#09142699;z-index:999;padding:18px;overflow:auto}
+.modal-box{background:white;border-radius:18px;padding:18px;max-width:500px;margin:25px auto}
+.close{float:left;background:#f0f2f6;border-radius:8px;padding:6px 11px}
+footer{text-align:center;padding:25px;color:#9aa3b1;font-size:10px}
+.empty{text-align:center;color:#9aa3b1;padding:22px;font-size:12px}
+@media(min-width:650px){.stats{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand">
+  <div class="logo">PARADISE<small>REAL ESTATE MANAGEMENT</small></div>
+  <div class="badge">پنل مدیریت املاک</div>
+ </div>
+ <div class="welcome">به <span>پارادایس</span> خوش آمدید</div>
+ <div class="subtitle">مدیریت هوشمند فایل‌ها، مشتریان و معاملات ملکی</div>
+</header>
+<main>
+ <div class="stats">
+  <div class="stat"><b id="total">۰</b><span>کل فایل‌های ثبت‌شده</span></div>
+  <div class="stat"><b id="sale">۰</b><span>فایل‌های فروش</span></div>
+  <div class="stat"><b id="rent">۰</b><span>فایل‌های اجاره</span></div>
+  <div class="stat"><b id="today">۰</b><span>فایل‌های امروز</span></div>
+ </div>
+
+ <div class="section-title">دسترسی سریع <small>ابزارهای اصلی</small></div>
+ <div class="actions">
+  <button class="action primary" onclick="openForm()">＋ ثبت فایل جدید</button>
+  <button class="action" onclick="document.getElementById('search').focus()">⌕ جست‌وجوی ملک</button>
+ </div>
+
+ <div class="section-title">نقشه املاک <small>موقعیت فایل‌ها</small></div>
+ <div class="panel">
+  <div id="map"></div>
+  <p style="font-size:10px;color:#8993a3;margin:10px 2px 0">برای افزودن موقعیت ملک، روی نقشه بزنید.</p>
+ </div>
+
+ <div class="section-title">فایل‌های املاک <small id="countLabel">۰ فایل</small></div>
+ <div class="panel">
+  <input id="search" class="search" placeholder="جست‌وجو بر اساس محله، آدرس یا عنوان..." oninput="render()">
+  <div class="filters">
+   <button class="filter active" onclick="setFilter('all',this)">همه</button>
+   <button class="filter" onclick="setFilter('فروش',this)">فروش</button>
+   <button class="filter" onclick="setFilter('اجاره',this)">اجاره</button>
+  </div>
+  <div id="listings"></div>
+ </div>
+</main>
+<footer>PARADISE © 2026 — سامانه مدیریت املاک</footer>
+
+<div class="modal" id="modal">
+ <div class="modal-box">
+  <button class="close" onclick="closeForm()">بستن ×</button>
+  <h3>ثبت فایل جدید</h3>
+  <form id="propertyForm">
+   <label>عنوان ملک</label>
+   <input id="title" required placeholder="مثلاً آپارتمان ۱۲۰ متری">
+   <label>نوع معامله</label>
+   <select id="type"><option>فروش</option><option>اجاره</option></select>
+   <label>متراژ (متر)</label>
+   <input id="area" type="number" required placeholder="مثلاً ۱۲۰">
+   <label>تعداد اتاق</label>
+   <input id="rooms" type="number" placeholder="مثلاً ۲">
+   <label>محله</label>
+   <input id="district" required placeholder="نام محله">
+   <label>آدرس دقیق</label>
+   <input id="address" placeholder="خیابان، کوچه، پلاک">
+   <label>قیمت (تومان)</label>
+   <input id="price" required placeholder="مثلاً ۵۰۰۰۰۰۰۰۰۰">
+   <label>نام مالک</label>
+   <input id="owner" placeholder="نام و نام خانوادگی">
+   <label>شماره تماس مالک</label>
+   <input id="phone" type="tel" placeholder="شماره تماس">
+   <label>توضیحات</label>
+   <textarea id="notes" rows="3" placeholder="توضیحات تکمیلی ملک..."></textarea>
+   <button class="submit" type="submit">ذخیره فایل ملک</button>
+  </form>
+ </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+let properties=JSON.parse(localStorage.getItem('paradise_properties')||'[]');
+let filter='all', selectedLocation=null, markers=[];
+const map=L.map('map').setView([35.6892,51.3890],12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+ attribution:'© OpenStreetMap'
+}).addTo(map);
+map.on('click',e=>{
+ selectedLocation={lat:e.latlng.lat,lng:e.latlng.lng};
+ openForm();
+});
+function save(){localStorage.setItem('paradise_properties',JSON.stringify(properties));}
+function openForm(){document.getElementById('modal').style.display='block';}
+function closeForm(){document.getElementById('modal').style.display='none';}
+function setFilter(value,el){
+ filter=value;
+ document.querySelectorAll('.filter').forEach(x=>x.classList.remove('active'));
+ el.classList.add('active');render();
+}
+function fa(n){return Number(n||0).toLocaleString('fa-IR');}
+function render(){
+ let q=document.getElementById('search').value.trim().toLowerCase();
+ let data=properties.filter(p=>(filter==='all'||p.type===filter)&&
+ (p.title+' '+p.district+' '+p.address).toLowerCase().includes(q));
+ document.getElementById('total').textContent=fa(properties.length);
+ document.getElementById('sale').textContent=fa(properties.filter(p=>p.type==='فروش').length);
+ document.getElementById('rent').textContent=fa(properties.filter(p=>p.type==='اجاره').length);
+ let today=new Date().toDateString();
+ document.getElementById('today').textContent=fa(properties.filter(p=>new Date(p.date).toDateString()===today).length);
+ document.getElementById('countLabel').textContent=fa(data.length)+' فایل';
+ document.getElementById('listings').innerHTML=data.length?data.slice().reverse().map(p=>`
+ <div class="listing">
+  <div><b>${esc(p.title)}</b><p>${esc(p.district)} · ${fa(p.area)} متر · ${esc(p.type)}</p><span class="tag">${esc(p.owner||'مالک ثبت نشده')}</span></div>
+  <div><div class="price">${fa(p.price)} تومان</div><button onclick="removeProperty('${p.id}')" style="margin-top:8px;background:#fff0f0;color:#bd4b4b;border-radius:7px;padding:5px 9px;font-size:10px">حذف</button></div>
+ </div>`).join(''):'<div class="empty">هنوز فایلی ثبت نشده است.</div>';
+ markers.forEach(m=>map.removeLayer(m));markers=[];
+ properties.forEach(p=>{
+  if(p.location){
+   let m=L.marker([p.location.lat,p.location.lng]).addTo(map)
+   .bindPopup('<b>'+esc(p.title)+'</b><br>'+esc(p.type)+' | '+fa(p.price)+' تومان');
+   markers.push(m);
+  }
+ });
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function removeProperty(id){
+ if(confirm('این فایل حذف شود؟')){
+  properties=properties.filter(p=>p.id!==id);save();render();
+ }
+}
+document.getElementById('propertyForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ let p={
+  id:Date.now().toString(),
+  title:title.value,type:type.value,area:area.value,rooms:rooms.value,
+  district:district.value,address:address.value,price:price.value,
+  owner:owner.value,phone:phone.value,notes:notes.value,
+  location:selectedLocation,date:new Date().toISOString()
+ };
+ properties.push(p);save();render();e.target.reset();
+ selectedLocation=null;closeForm();
+ alert('فایل با موفقیت ثبت شد.');
+});
+render();
+</script>
+</body>
+</html>
