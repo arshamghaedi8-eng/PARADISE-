@@ -1,0 +1,14 @@
+{
+  "name": "PARADISE Real Estate",
+  "short_name": "PARADISE",
+  "id": "/PARADISE-/",
+  "description": "سامانه هوشمند مدیریت املاک پارادایس",
+  "start_url": "/PARADISE-/",
+  "scope": "/PARADISE-/",
+  "display": "standalone",
+  "orientation": "any",
+  "dir": "rtl",
+  "lang": "fa",
+  "theme_color": "#5A1830",
+  "background_color": "#808080"
+}
