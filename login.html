@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ورود به PARADISE</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="login-container">
+
+<h1>PARADISE</h1>
+<p>سامانه هوشمند مدیریت املاک</p>
+
+<h2>ورود به حساب کاربری</h2>
+
+<form id="loginForm">
+
+<input
+type="email"
+id="email"
+placeholder="ایمیل"
+required>
+
+<input
+type="password"
+id="password"
+placeholder="رمز عبور"
+required>
+
+<button type="submit">ورود</button>
+
+</form>
+
+<p id="loginMessage"></p>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
+<script src="auth.js"></script>
+
+<script>
+document.getElementById("loginForm")
+.addEventListener("submit", async function(e) {
+
+e.preventDefault();
+
+const email = document.getElementById("email").value;
+const password = document.getElementById("password").value;
+const message = document.getElementById("loginMessage");
+
+try {
+await ParadiseAuth.signIn(email, password);
+message.textContent = "ورود موفقیت‌آمیز بود.";
+location.href = "index.html";
+} catch(error) {
+message.textContent = "خطا در ورود: " + error.message;
+}
+
+});
+</script>
+
+</body>
+</html>
