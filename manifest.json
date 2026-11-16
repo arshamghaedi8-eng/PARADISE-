@@ -9,8 +9,8 @@
   "orientation": "any",
   "dir": "rtl",
   "lang": "fa",
-  "background_color": "#101D35",
-  "theme_color": "#101D35",
+  "background_color": "#D1D3D6",
+"theme_color": "#8B1538",
   "icons": [
     {
       "src": "icon-192.png",
